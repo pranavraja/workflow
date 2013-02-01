@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 import sys
 import os
+from collections import defaultdict
 
-DELIMITER = '--'
+def parse(f, delimeter):
+    files = defaultdict(str)
+    current_filename = None
+    for line in f:
+        if not line.strip(): continue
+        if line.startswith(delimeter):
+            current_filename = line[len(delimeter):].strip()
+        elif current_filename:
+            files[current_filename] += line
+    return files
 
-def write_files(input_filename):
-	current_file = None
-	for line in open(input_filename):
-		if not line.strip(): continue
-		if line.startswith(DELIMITER):
-			current_filename = os.path.join(os.path.dirname(input_filename), line[len(DELIMITER):].strip())
-			current_file = open(current_filename, 'w')
-		elif current_file:
-			current_file.write(line)
+def create(d, basepath):
+    if not os.path.isdir(basepath):
+        os.mkdir(basepath)
+    for filename, content in d.items():
+        open(os.path.join(basepath, filename), 'w').write(d[filename])
 
-if __name__ == '__main__':
-	if len(sys.argv) < 2:
-		print 'Usage: python %s input_file' % __file__
-		sys.exit(0)
-	input_file = sys.argv[1]
-	write_files(open(input_file))
